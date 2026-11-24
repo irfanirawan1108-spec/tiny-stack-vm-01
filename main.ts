@@ -1,3 +1,8 @@
+// How this runs: each opcode is decoded through one lookup string that
+// packs its operand size and stack effect, so the main loop stays a single
+// switch. Anything illegal -- a bad opcode, an empty stack, a bad address,
+// a divide by zero, or running past the step budget -- stops the program
+// with a trap code instead of crashing the runner.
 // Tiny stack VM (ISA v1): runs every /input/<id>/program.bin on /input/<id>/input.bin
 // and writes /output/<id>/stdout.bin + /output/<id>/exit.txt. Node 22, no deps.
 import{readFileSync,readdirSync,mkdirSync,writeFileSync}from'node:fs';
@@ -10,6 +15,7 @@ for(const d of readdirSync(I).sort()){
  const D=new Int32Array(256),C=new Int32Array(64),M=new Int32Array(256),B=new Uint8Array(65536);
  let s=0,c=0,p=0,t=0,l=0,q=0,e=0,a=0,b=0,r=0;
  outer:for(;;){
+  // Step budget spent: halt with the step-limit trap code.
   if(t===1e6){e=10;break}
   if(p<0||p>=P.length){e=9;break}
   const o=P[p];
